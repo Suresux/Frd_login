@@ -13,14 +13,18 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    # Step 1: Azure login action with subscription ID
+    # Step 1: Login to Azure
     - name: 'Login to Azure'
       uses: azure/login@v1
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}  # The Subscription ID from Azure
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        enable-AzPSSession: false
+        environment: azurecloud
+        allow-no-subscriptions: false
+        auth-type: SERVICE_PRINCIPAL
 
     # Step 2: Set up Docker Buildx
     - name: Set up Docker Buildx
@@ -47,7 +51,3 @@ jobs:
         app-name: dfwebapp  # Your Azure App Service Name
         slot-name: production
         images: dfacrapp.azurecr.io/my-react-app:v1  # Your Docker Image
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}  # GitHub Secret for Service Principal Client ID
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}  # GitHub Secret for Service Principal Tenant ID
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}  # GitHub Secret for Service Principal Client Secret
