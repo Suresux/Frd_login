@@ -1,0 +1,40 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: dfacrapp.azurecr.io  # Your ACR Name
+        username: ${{ secrets.AZURE_USERNAME }}  # GitHub Secret for ACR username
+        password: ${{ secrets.AZURE_PASSWORD }}  # GitHub Secret for ACR password
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t dfacrapp.azurecr.io/my-react-app:v1 .  # Your Docker Image
+        docker push dfacrapp.azurecr.io/my-react-app:v1  # Push Docker Image to ACR
+
+    - name: Deploy to Azure App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: dfwebapp  # Your Azure App Service Name
+        slot-name: production
+        images: dfacrapp.azurecr.io/my-react-app:v1  # Your Docker Image
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}  # GitHub Secret for Service Principal Client ID
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}  # GitHub Secret for Service Principal Tenant ID
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}  # GitHub Secret for Service Principal Client Secret
