@@ -5,6 +5,10 @@ on:
     branches:
       - main  # Trigger on push to the main branch
 
+permissions:
+  id-token: write  # Required for Azure login
+  contents: read  # Required for repository contents
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest  # You can change this to a self-hosted runner if necessary
@@ -14,7 +18,7 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
-    # Step 2: Login to Azure
+    # Step 2: Login to Azure using individual secrets (no JSON format)
     - name: 'Login to Azure'
       uses: azure/login@v1
       with:
@@ -37,7 +41,7 @@ jobs:
         docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/my-app:v1 .
         docker push ${{ secrets.ACR_NAME }}.azurecr.io/my-app:v1
 
-    # Step 5: Deploy to Azure App Service (No slot)
+    # Step 5: Deploy to Azure App Service
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v2
       with:
